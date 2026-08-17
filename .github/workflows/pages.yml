@@ -1,0 +1,23 @@
+name: Deploy SIMA TAHRIR
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Prepare site
+        run: |
+          sed -i "s|PUBLIC_KEY_PLACEHOLDER|sb_publishable_zgnsJAX2KhFL8TKQg-4fng_dmbpl5eH|g" index.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4
