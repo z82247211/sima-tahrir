@@ -1,1 +1,101 @@
-<!doctype html><html lang="fa" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>SIMA TAHRIR</title><style>body{font-family:Tahoma,Arial;margin:0;background:#f7f3ff;color:#263238}.box{background:#fff;border-radius:20px;padding:25px;box-shadow:0 8px 30px #0001}.login{min-height:100vh;display:grid;place-items:center}.login .box{width:min(400px,90%)}input,button{width:100%;padding:12px;margin:7px 0;border-radius:12px;font:inherit;box-sizing:border-box}input{border:1px solid #ddd}button{border:0;background:#765cff;color:#fff;cursor:pointer}.hidden{display:none!important}.app{min-height:100vh}.bar{background:#fff;padding:18px;display:flex;justify-content:space-between;align-items:center}.content{max-width:1100px;margin:auto;padding:25px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:15px}.msg{min-height:24px;font-size:14px}.reward{padding:15px;border:1px solid #eee;border-radius:15px;background:#fff;text-align:center}.reward img{width:120px;height:120px;object-fit:contain}</style></head><body><div id="login" class="login"><div class="box"><h1>🎁 SIMA TAHRIR</h1><p>سامانه هوشمند امتیاز و جوایز</p><form id="loginForm"><input id="username" placeholder="نام کاربری" autocomplete="username" required><input id="password" type="password" placeholder="رمز عبور" autocomplete="current-password" required><button type="submit">ورود به پنل</button></form><div id="loginMsg" class="msg"></div></div></div><div id="app" class="app hidden"><header class="bar"><b>🎁 SIMA TAHRIR</b><button id="logout" style="width:auto;padding:8px 18px;background:#777">خروج</button></header><main class="content"><h2>پنل مدیریت</h2><div class="grid"><div class="box"><h3>🏷️ کلاس‌ها</h3><strong id="classesCount">۰</strong></div><div class="box"><h3>👩‍🏫 معلم‌ها</h3><strong id="teachersCount">۰</strong></div><div class="box"><h3>👨‍🎓 دانش‌آموزان</h3><strong id="studentsCount">۰</strong></div><div class="box"><h3>🎁 جوایز</h3><strong id="rewardsCount">۰</strong></div></div><section class="box" style="margin-top:20px"><h2>🎁 جوایز</h2><div id="rewardsList" class="grid"></div></section></main></div><script>const API='https://znisrmcilqzjicmfsype.supabase.co/functions/v1/sima-tahrir-api';let token='';const el=id=>document.getElementById(id);async function call(action,data){const headers={'Content-Type':'application/json'};if(token)headers.Authorization='Bearer '+token;const res=await fetch(API,{method:'POST',headers,body:JSON.stringify(Object.assign({action},data||{}))});const json=await res.json().catch(()=>({error:'پاسخ نامعتبر از سرور'}));if(!res.ok)throw new Error(json.error||'خطا');return json}async function load(){try{const [c,t,s,r]=await Promise.all([call('classes'),call('teachers'),call('students',{page:1,page_size:1}),call('rewards')]);el('classesCount').textContent=(c.classes||[]).length.toLocaleString('fa-IR');el('teachersCount').textContent=(t.teachers||[]).length.toLocaleString('fa-IR');el('studentsCount').textContent=Number(s.total||0).toLocaleString('fa-IR');el('rewardsCount').textContent=(r.rewards||[]).length.toLocaleString('fa-IR');el('rewardsList').innerHTML=(r.rewards||[]).map(x=>'<div class="reward">'+(x.image_url?'<img src="'+x.image_url+'">':'<div style="font-size:55px">🎁</div>')+'<h3>'+String(x.name||'')+'</h3><p>'+String(x.description||'')+'</p><b>⭐ '+Number(x.points_required||0).toLocaleString('fa-IR')+' امتیاز</b></div>').join('')||'<p>هنوز جایزه‌ای ثبت نشده است.</p>'}catch(e){console.error(e)}}el('loginForm').addEventListener('submit',async function(e){e.preventDefault();el('loginMsg').textContent='⏳ در حال ورود...';try{const x=await call('login',{username:el('username').value,password:el('password').value});if(!x.ok||!x.session)throw new Error(x.error||'ورود انجام نشد');token=x.session;sessionStorage.setItem('sima_session',token);el('login').classList.add('hidden');el('app').classList.remove('hidden');el('loginMsg').textContent='';await load()}catch(e){el('loginMsg').textContent='❌ '+e.message}});el('logout').addEventListener('click',function(){token='';sessionStorage.removeItem('sima_session');location.reload()});</script></body></html>
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>داشبورد مدیر | سامانه جوایز مدارس</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:#f6f7fb;color:#263238}.hidden{display:none!important}.login{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#f1ecff,#eef8ff)}.box{background:#fff;border-radius:20px;padding:24px;box-shadow:0 8px 30px #00000012}.login .box{width:min(430px,100%)}h1,h2,h3{margin-top:0}.muted{color:#718096;font-size:14px}.field{width:100%;padding:13px 14px;margin:7px 0;border:1px solid #ddd;border-radius:12px;font:inherit}.btn{border:0;border-radius:12px;padding:12px 18px;background:#765cff;color:#fff;font:inherit;cursor:pointer}.msg{min-height:25px;margin-top:8px;font-size:14px}.bar{background:#fff;border-bottom:1px solid #eee;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;gap:15px}.bar button{background:#777}.content{max-width:1200px;margin:auto;padding:24px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}.stat{padding:20px}.stat h3{font-size:16px;color:#667085;margin-bottom:12px}.number{font-size:32px;font-weight:700}.section{margin-top:22px}.school{padding:18px}.school-name{font-size:18px;font-weight:700}.badge{display:inline-block;padding:5px 9px;border-radius:999px;background:#eaf8ef;color:#23834b;font-size:12px;margin-top:10px}.badge.off{background:#f3f4f6;color:#777}.refresh{background:#fff;color:#765cff;border:1px solid #ddd}
+</style>
+</head>
+<body>
+<div id="login" class="login">
+  <div class="box">
+    <h1>🎓 سامانه جوایز مدارس</h1>
+    <p class="muted">ورود مدیر کل</p>
+    <form id="loginForm">
+      <input id="username" class="field" placeholder="نام کاربری" autocomplete="username" required>
+      <input id="password" class="field" type="password" placeholder="رمز عبور" autocomplete="current-password" required>
+      <button class="btn" style="width:100%;margin-top:7px" type="submit">ورود به داشبورد</button>
+    </form>
+    <div id="loginMsg" class="msg"></div>
+  </div>
+</div>
+
+<div id="app" class="hidden">
+<header class="bar">
+  <div><b>🎓 داشبورد مدیر</b><div class="muted">مدیریت مدارس، کلاس‌ها، دانش‌آموزان، معلم‌ها و جوایز</div></div>
+  <button id="logout" class="btn">خروج</button>
+</header>
+<main class="content">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+    <div><h2>نمای کلی سامانه</h2><div id="lastUpdate" class="muted"></div></div>
+    <button id="refresh" class="btn refresh">🔄 بروزرسانی اطلاعات</button>
+  </div>
+
+  <div class="grid">
+    <div class="box stat"><h3>🏫 مدارس</h3><div id="schoolsCount" class="number">۰</div></div>
+    <div class="box stat"><h3>🏷️ کلاس‌ها</h3><div id="classesCount" class="number">۰</div></div>
+    <div class="box stat"><h3>👨‍🎓 دانش‌آموزان</h3><div id="studentsCount" class="number">۰</div></div>
+    <div class="box stat"><h3>👩‍🏫 معلم‌ها</h3><div id="teachersCount" class="number">۰</div></div>
+    <div class="box stat"><h3>🎁 جوایز</h3><div id="rewardsCount" class="number">۰</div></div>
+    <div class="box stat"><h3>📋 درخواست جوایز</h3><div id="requestsCount" class="number">۰</div></div>
+  </div>
+
+  <section class="box section">
+    <h2>🏫 مدارس موجود</h2>
+    <p class="muted">اطلاعات از دیتابیس فعلی خوانده می‌شود؛ چیزی در این مرحله حذف یا بازسازی نمی‌شود.</p>
+    <div id="schoolsList" class="grid"></div>
+  </section>
+  <div id="pageMsg" class="msg"></div>
+</main>
+</div>
+
+<script>
+const API='https://ubjsvqhxoufdjwzqkmsd.supabase.co/functions/v1/school-api';
+let token=sessionStorage.getItem('sima_session')||'';
+const el=id=>document.getElementById(id);
+function fa(n){return Number(n||0).toLocaleString('fa-IR')}
+async function call(action,data){
+  const headers={'Content-Type':'application/json'};
+  if(token) headers.Authorization='Bearer '+token;
+  const res=await fetch(API,{method:'POST',headers,body:JSON.stringify(Object.assign({action},data||{}))});
+  const json=await res.json().catch(()=>({error:'پاسخ نامعتبر از سرور'}));
+  if(!res.ok) throw new Error(json.error||'خطا در دریافت اطلاعات');
+  return json;
+}
+async function loadDashboard(){
+  el('pageMsg').textContent='⏳ در حال دریافت اطلاعات واقعی دیتابیس...';
+  try{
+    const [schools,classes,students,teachers,rewards,requests]=await Promise.all([
+      call('superadmin_schools'),call('admin_classes'),call('admin_students'),call('admin_teachers'),call('admin_rewards'),call('admin_requests')
+    ]);
+    el('schoolsCount').textContent=fa((schools.schools||[]).length);
+    el('classesCount').textContent=fa((classes.classes||[]).length);
+    el('studentsCount').textContent=fa((students.students||[]).length);
+    el('teachersCount').textContent=fa((teachers.teachers||[]).length);
+    el('rewardsCount').textContent=fa((rewards.rewards||[]).length);
+    el('requestsCount').textContent=fa((requests.requests||[]).length);
+    el('schoolsList').innerHTML=(schools.schools||[]).map(s=>`<div class="box school"><div class="school-name">🏫 ${escapeHtml(s.name||'بدون نام')}</div><div class="muted" style="margin-top:7px">کد مدرسه: ${escapeHtml(s.code||'-')}</div><span class="badge ${s.active?'':'off'}">${s.active?'فعال':'غیرفعال'}</span></div>`).join('')||'<p>مدرسه‌ای ثبت نشده است.</p>';
+    el('lastUpdate').textContent='آخرین بروزرسانی: '+new Date().toLocaleString('fa-IR');
+    el('pageMsg').textContent='✅ اطلاعات با موفقیت از دیتابیس موجود خوانده شد.';
+  }catch(e){
+    console.error(e);el('pageMsg').textContent='❌ '+e.message;
+  }
+}
+function escapeHtml(v){return String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+el('loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();el('loginMsg').textContent='⏳ در حال ورود...';
+  try{
+    const x=await call('admin_login',{username:el('username').value.trim(),password:el('password').value});
+    if(!x.token) throw new Error(x.error||'ورود انجام نشد');
+    token=x.token;sessionStorage.setItem('sima_session',token);
+    el('login').classList.add('hidden');el('app').classList.remove('hidden');el('loginMsg').textContent='';await loadDashboard();
+  }catch(e){el('loginMsg').textContent='❌ '+e.message}
+});
+el('refresh').addEventListener('click',loadDashboard);
+el('logout').addEventListener('click',()=>{token='';sessionStorage.removeItem('sima_session');location.reload()});
+if(token){el('login').classList.add('hidden');el('app').classList.remove('hidden');loadDashboard()}
+</script>
+</body>
+</html>
